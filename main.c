@@ -6,25 +6,60 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-// we fix channels to 3
-#define CHANNEL 3
+#define DEBUG
+
+// DEBUG print macro.
+#ifdef DEBUG
+#define DEBUG_PRINT(x) printf x
+#else
+#define DEBUG_PRINT(x)                                                         \
+  do {                                                                         \
+  } while (0)
+#endif
+
+/// Helper function to print a pixel.
+/// # Params
+/// * pixel - pointer to the pixel data.
+/// * channels - number of channels in the pixel
+void print_pixel(unsigned char *pixel, int channels) {
+#ifdef DEBUG
+  printf("( ");
+  for (int i = 0; i < channels; i++) {
+    printf("%d", pixel[i]);
+    if (i != channels - 1) {
+      printf(", ");
+    }
+  }
+  printf(" )\n");
+#else
+  do {
+  } while (0 && pixel + channels);
+#endif /* ifdef  DEBUG */
+}
+
+/// Copies data from the given color to the given
+/// # Params
+/// * color - the color to copy.
+/// * pixel - pixel to where copy to
+/// * channels - number of channels in the pixel
+void copy_pixel(unsigned char *color, unsigned char *pixel, int channels) {
+  for (int i = 0; i < channels; i++) {
+    // *pixel = *color;
+    *pixel = *color;
+    pixel++;
+    color++;
+  }
+}
 
 /// Helper function to print a image to stdout.
 /// # Params
 /// * image - Pointer to the image.
 /// * width - width of the image.
 /// * height - height of the image.
-void print_image(unsigned char *image, int width, int height) {
-  for (int i = 0; i < width; i++) {
-    for (int j = 0; j < height; j++) {
-      unsigned char *pixel = image + (i * width) + j;
-
-      printf("[ x: %d, y : %d ] ( ", i, j);
-      for (size_t channel = 0; channel < 3; channel++) {
-        printf("%d  ", *(pixel + channel));
-      }
-      printf(")\n");
-    }
+void print_image(unsigned char *image, int image_size, int channels) {
+  for (unsigned char *pixel = image; pixel != image + image_size;
+       pixel += channels) {
+    print_pixel(pixel, channels);
   }
 }
 
@@ -38,9 +73,40 @@ void print_image(unsigned char *image, int width, int height) {
 /// * new_height - height of the resized image.
 /// * resize_scale - scaling factor of new image.
 /// see : https://en.wikipedia.org/wiki/Nearest-neighbor_interpolation
-void nearest_neighbor(unsigned char *o_image, int o_width, int o_height,
+void nearest_neighbor(unsigned char *o_image, int o_height,
                       unsigned char *new_image, int new_width, int new_height,
-                      float resize_scale) {}
+                      float resize_scale, int channels) {
+  for (double new_y = 0.0; new_y < new_height; new_y++) {
+    for (double new_x = 0.0; new_x < new_width; new_x++) {
+      DEBUG_PRINT(("nx : %f, ny : %f\n", new_x, new_y));
+
+      double scaled_y = new_y / resize_scale;
+      double scaled_x = new_x / resize_scale;
+      DEBUG_PRINT(("sx : %f, sy : %f\n", scaled_x, scaled_y));
+
+      int interpolated_y = floor(scaled_y);
+      int interpolated_x = floor(scaled_x);
+      DEBUG_PRINT(
+          ("ix : %d       , iy : %d\n", interpolated_x, interpolated_y));
+
+      unsigned char *color =
+          o_image + (channels * (interpolated_y * o_height + interpolated_x));
+
+      DEBUG_PRINT(("color pick offset : %d\n",
+                   interpolated_x * o_width + interpolated_y));
+      DEBUG_PRINT(("color : "));
+      print_pixel(color, channels);
+
+      unsigned char *pixel =
+          new_image + (channels * ((int)new_y * new_height + (int)new_x));
+      DEBUG_PRINT(
+          ("new image offset : %d", (int)new_y * new_height + (int)new_x));
+      DEBUG_PRINT(("\n\n"));
+
+      copy_pixel(color, pixel, channels);
+    }
+  }
+}
 
 // entry point
 int main(int argc, char *argv[]) {
@@ -59,8 +125,8 @@ int main(int argc, char *argv[]) {
   int image_width, image_height, image_channels;
 
   // load image.
-  unsigned char *image_data = stbi_load(filepath, &image_width, &image_height,
-                                        &image_channels, CHANNEL);
+  unsigned char *image_data =
+      stbi_load(filepath, &image_width, &image_height, &image_channels, 0);
 
   // incase image loading fails.
   if (image_data == NULL) {
@@ -77,26 +143,22 @@ int main(int argc, char *argv[]) {
 
   printf("[INFO] : Original image width : %d, image height : %d\n", image_width,
          image_height);
-  printf("[INFO] : Resize width : %d, Reside height : %d\n", resize_width,
+  printf("[INFO] : resize width : %d, resize height : %d\n", resize_width,
          resize_height);
 
   printf("[INFO] : Loaded image data:\n");
-  print_image(image_data, image_width, image_height);
 
   // creating new image buffer.
-  unsigned char *new_image = (unsigned char *)calloc(
-      sizeof(unsigned char) * CHANNEL * resize_width * resize_height, 1);
-
-  printf("[INFO] : New Image :\n");
-  print_image(new_image, resize_width, resize_height);
-
-  // writing new image.
-  int result = stbi_write_jpg("output.jpg", resize_width, resize_height, 3,
-                              new_image, 100);
+  unsigned char *new_image =
+      calloc(image_channels * resize_width * resize_height, 1);
 
   // depending of the implementation call resizing algorithm.
-  nearest_neighbor(image_data, image_width, image_height, new_image,
-                   resize_width, resize_height, resize_scale);
+  nearest_neighbor(image_data, image_height, new_image, resize_width,
+                   resize_height, resize_scale, image_channels);
+
+  // writing new image.
+  int result = stbi_write_jpg("output.jpg", resize_width, resize_height,
+                              image_channels, new_image, 100);
 
   if (result == 0) {
     fprintf(stderr, "[ERROR] : Failed to write new image\n");
