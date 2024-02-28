@@ -6,7 +6,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define DEBUG
+// #define DEBUG
 
 // DEBUG print macro.
 #ifdef DEBUG
@@ -93,7 +93,7 @@ void nearest_neighbor(unsigned char *o_image, int o_height,
           o_image + (channels * (interpolated_y * o_height + interpolated_x));
 
       DEBUG_PRINT(("color pick offset : %d\n",
-                   interpolated_x * o_width + interpolated_y));
+                   channels * (interpolated_y * o_height + interpolated_x)));
       DEBUG_PRINT(("color : "));
       print_pixel(color, channels);
 
