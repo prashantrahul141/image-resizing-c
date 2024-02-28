@@ -7,7 +7,7 @@ test_2: main
 	./main 2 ./images/2x2.png
 
 main: main.c
-	gcc -o main -Wall -Wextra -pedantic main.c -lm
+	gcc -DDEBUG -o main -Wall -Wextra -pedantic main.c -lm
 
 build: main.c
 	gcc -O3 -o main -Wall -Wextra -pedantic main.c -lm
