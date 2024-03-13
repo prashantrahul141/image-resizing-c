@@ -35,21 +35,20 @@ void print_pixel(unsigned char *pixel, int channels) {
 #endif /* ifdef  DEBUG */
 }
 
-/// Copies data from the given color to the given
+/// Copies data from the given color to the given pixel pointer.
 /// # Params
 /// * color - the color to copy.
 /// * pixel - pixel to where copy to
 /// * channels - number of channels in the pixel
 void copy_pixel(unsigned char *color, unsigned char *pixel, int channels) {
   for (int i = 0; i < channels; i++) {
-    // *pixel = *color;
     *pixel = *color;
     pixel++;
     color++;
   }
 }
 
-/// Helper function to print a image to stdout.
+/// Basically a wrapper around print_pixel for all the pixels in the image.
 /// # Params
 /// * image - Pointer to the image.
 /// * width - width of the image.
@@ -62,6 +61,9 @@ void print_image(unsigned char *image, int image_size, int channels) {
 }
 
 /// Nearest-neighbor interpolation
+/// see for more info:
+/// https://en.wikipedia.org/wiki/Nearest-neighbor_interpolation
+///
 /// # Params
 /// * o_image - pointer to the original image.
 /// * o_width - width of the original image.
@@ -70,7 +72,6 @@ void print_image(unsigned char *image, int image_size, int channels) {
 /// * new_width - width of the resized image.
 /// * new_height - height of the resized image.
 /// * resize_scale - scaling factor of new image.
-/// see : https://en.wikipedia.org/wiki/Nearest-neighbor_interpolation
 void nearest_neighbor(unsigned char *o_image, int o_height,
                       unsigned char *new_image, int new_width, int new_height,
                       float resize_scale, int channels) {
@@ -106,8 +107,9 @@ void nearest_neighbor(unsigned char *o_image, int o_height,
 
 // entry point
 int main(int argc, char *argv[]) {
+  // if argc is not 3
   if (argc != 3) {
-    fprintf(stderr, "Usage:\n\tmain [ratio] [file path]\n");
+    fprintf(stderr, "Usage:\n\tmain [scaling_factor] [file path]\n");
     return 0;
   }
 
