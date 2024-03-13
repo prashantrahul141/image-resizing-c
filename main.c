@@ -15,6 +15,8 @@
 #define LOG(fmt, args...)
 #endif
 
+#define USAGE "Usage:\n\tmain [scaling factor] [file path]\n"
+
 /// Helper function to print a pixel.
 /// # Params
 /// * pixel - pointer to the pixel data.
@@ -72,6 +74,7 @@ void print_image(unsigned char *image, int image_size, int channels) {
 /// * new_width - width of the resized image.
 /// * new_height - height of the resized image.
 /// * resize_scale - scaling factor of new image.
+/// * channels - channels in each pixel.
 void nearest_neighbor(unsigned char *o_image, int o_height,
                       unsigned char *new_image, int new_width, int new_height,
                       float resize_scale, int channels) {
@@ -105,16 +108,37 @@ void nearest_neighbor(unsigned char *o_image, int o_height,
   }
 }
 
+/// Bilinear interpolation
+/// see for more info:
+/// https://en.wikipedia.org/wiki/Bilinear_interpolation
+///
+/// # Params
+/// * o_image - pointer to the original image.
+/// * o_width - width of the original image.
+/// * o_height - height of the original image.
+/// * new_image - pointer to the new image.
+/// * new_width - width of the resized image.
+/// * new_height - height of the resized image.
+/// * resize_scale - scaling factor of new image.
+/// * channels - channels in each pixel.
+void bilinear_interpolation(unsigned char *o_image, int o_height,
+                            unsigned char *new_image, int new_width,
+                            int new_height, float resize_scale, int channels) {}
+
 // entry point
 int main(int argc, char *argv[]) {
   // if argc is not 3
   if (argc != 3) {
-    fprintf(stderr, "Usage:\n\tmain [scaling_factor] [file path]\n");
+    fprintf(stderr, USAGE);
     return 0;
   }
 
   // resizing scale to apply.
-  int resize_scale = atof(argv[1]);
+  float resize_scale = atof(argv[1]);
+  if (resize_scale == 0.0f) {
+    fprintf(stderr, "Invalid scaling factor : %s\n%s", argv[1], USAGE);
+    return 1;
+  }
 
   // filepath
   char *filepath = argv[2];
@@ -151,18 +175,35 @@ int main(int argc, char *argv[]) {
   unsigned char *new_image =
       calloc(image_channels * resize_width * resize_height, 1);
 
-  // depending of the implementation call resizing algorithm.
+  // call nearest neighbor interpolation.
   nearest_neighbor(image_data, image_height, new_image, resize_width,
                    resize_height, resize_scale, image_channels);
 
   // writing new image.
-  int result = stbi_write_jpg("output.jpg", resize_width, resize_height,
-                              image_channels, new_image, 100);
+  int result = stbi_write_jpg("output_nearest_neighbor.jpg", resize_width,
+                              resize_height, image_channels, new_image, 100);
 
   if (result == 0) {
-    fprintf(stderr, "[ERROR] : Failed to write new image\n");
+    fprintf(stderr, "[ERROR] : Failed to write new image from nearest neighbor "
+                    "interpolation.\n");
   } else {
-    printf("[INFO] : Wrote new image.\n");
+    printf("[INFO] : Wrote new image: output_nearest_neighbor.jpg\n");
+  }
+
+  // call bilinear interpolation.
+  bilinear_interpolation(image_data, image_height, new_image, resize_width,
+                         resize_height, resize_scale, image_channels);
+
+  // writing new image.
+  result = stbi_write_jpg("output_bilinear.jpg", resize_width, resize_height,
+                          image_channels, new_image, 100);
+
+  if (result == 0) {
+    fprintf(
+        stderr,
+        "[ERROR] : Failed to write new image from bilinear interpolation\n");
+  } else {
+    printf("[INFO] : Wrote new image: output_bilinear.jpg\n");
   }
 
   // freeing image.
