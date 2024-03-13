@@ -118,6 +118,7 @@ int main(int argc, char *argv[]) {
 
   // filepath
   char *filepath = argv[2];
+  printf("[INFO] : Loading image : %s", filepath);
 
   // width, height, channels of original image.
   int image_width, image_height, image_channels;
