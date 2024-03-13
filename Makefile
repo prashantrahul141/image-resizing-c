@@ -14,4 +14,5 @@ build: main.c
 
 
 clean:
-	rm ./main
+	rm -f ./main
+	rm -f output.jpg
