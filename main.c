@@ -8,13 +8,11 @@
 
 // #define DEBUG
 
-// DEBUG print macro.
 #ifdef DEBUG
-#define LOG(x) printf x
+#define LOG(fmt, args...)                                                      \
+  fprintf(stderr, "%s:%d: " fmt, __FILE__, __LINE__, ##args)
 #else
-#define LOG(x)                                                                 \
-  do {                                                                         \
-  } while (0)
+#define LOG(fmt, args...)
 #endif
 
 /// Helper function to print a pixel.
@@ -80,26 +78,26 @@ void nearest_neighbor(unsigned char *o_image, int o_height,
     for (double new_x = 0.0; new_x < new_width; new_x++) {
 
       // original value for new_x and new_y.
-      LOG(("new(y, x)         = %.1f, %.1f\n", new_y, new_x));
+      LOG("new(y, x)         = %.1f, %.1f\n", new_y, new_x);
 
       // interpolated x and y according to resize scale.
       int interpolated_y = floor(new_y / resize_scale);
       int interpolated_x = floor(new_x / resize_scale);
 
-      LOG(("iterpolated(y, x) = %d,   %d\n", interpolated_y, interpolated_x));
+      LOG("iterpolated(y, x) = %d,   %d\n", interpolated_y, interpolated_x);
 
       unsigned char *color =
           o_image + (channels * (interpolated_y * o_height + interpolated_x));
 
-      LOG(("color pick offset : %d\n",
-           channels * (interpolated_y * o_height + interpolated_x)));
-      LOG(("color : "));
+      LOG("color pick offset : %d\n",
+          channels * (interpolated_y * o_height + interpolated_x));
+      LOG("color : ");
       print_pixel(color, channels);
 
       unsigned char *pixel =
           new_image + (channels * ((int)new_y * new_height + (int)new_x));
-      LOG(("new image offset : %d", (int)new_y * new_height + (int)new_x));
-      LOG(("\n\n"));
+      LOG("new image offset : %d", (int)new_y * new_height + (int)new_x);
+      LOG("\n\n");
 
       copy_pixel(color, pixel, channels);
     }
@@ -118,7 +116,7 @@ int main(int argc, char *argv[]) {
 
   // filepath
   char *filepath = argv[2];
-  printf("[INFO] : Loading image : %s", filepath);
+  printf("[INFO] : Loading image : %s\n", filepath);
 
   // width, height, channels of original image.
   int image_width, image_height, image_channels;
