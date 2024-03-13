@@ -10,9 +10,9 @@
 
 // DEBUG print macro.
 #ifdef DEBUG
-#define DEBUG_PRINT(x) printf x
+#define LOG(x) printf x
 #else
-#define DEBUG_PRINT(x)                                                         \
+#define LOG(x)                                                                 \
   do {                                                                         \
   } while (0)
 #endif
@@ -78,30 +78,28 @@ void nearest_neighbor(unsigned char *o_image, int o_height,
                       float resize_scale, int channels) {
   for (double new_y = 0.0; new_y < new_height; new_y++) {
     for (double new_x = 0.0; new_x < new_width; new_x++) {
-      DEBUG_PRINT(("nx : %f, ny : %f\n", new_x, new_y));
 
-      double scaled_y = new_y / resize_scale;
-      double scaled_x = new_x / resize_scale;
-      DEBUG_PRINT(("sx : %f, sy : %f\n", scaled_x, scaled_y));
+      // original value for new_x and new_y.
+      LOG(("new(y, x)         = %.1f, %.1f\n", new_y, new_x));
 
-      int interpolated_y = floor(scaled_y);
-      int interpolated_x = floor(scaled_x);
-      DEBUG_PRINT(
-          ("ix : %d       , iy : %d\n", interpolated_x, interpolated_y));
+      // interpolated x and y according to resize scale.
+      int interpolated_y = floor(new_y / resize_scale);
+      int interpolated_x = floor(new_x / resize_scale);
+
+      LOG(("iterpolated(y, x) = %d,   %d\n", interpolated_y, interpolated_x));
 
       unsigned char *color =
           o_image + (channels * (interpolated_y * o_height + interpolated_x));
 
-      DEBUG_PRINT(("color pick offset : %d\n",
-                   channels * (interpolated_y * o_height + interpolated_x)));
-      DEBUG_PRINT(("color : "));
+      LOG(("color pick offset : %d\n",
+           channels * (interpolated_y * o_height + interpolated_x)));
+      LOG(("color : "));
       print_pixel(color, channels);
 
       unsigned char *pixel =
           new_image + (channels * ((int)new_y * new_height + (int)new_x));
-      DEBUG_PRINT(
-          ("new image offset : %d", (int)new_y * new_height + (int)new_x));
-      DEBUG_PRINT(("\n\n"));
+      LOG(("new image offset : %d", (int)new_y * new_height + (int)new_x));
+      LOG(("\n\n"));
 
       copy_pixel(color, pixel, channels);
     }
@@ -146,7 +144,7 @@ int main(int argc, char *argv[]) {
   printf("[INFO] : resize width : %d, resize height : %d\n", resize_width,
          resize_height);
 
-  printf("[INFO] : Loaded image data:\n");
+  printf("[INFO] : Loaded image data\n");
 
   // creating new image buffer.
   unsigned char *new_image =
