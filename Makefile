@@ -16,4 +16,5 @@ clean:
 	rm -f ./main
 	rm -f ./main_debug.o
 	rm -f ./main_release.o
-	rm -f output.jpg
+	rm -f output_nearest_neighbor.jpg
+	rm -f output_bilinear.jpg

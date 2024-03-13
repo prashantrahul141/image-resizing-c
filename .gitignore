@@ -53,3 +53,5 @@ dkms.conf
 
 main
 output.jpg
+output_bilinear.jpg
+output_nearest_neighbor.jpg
