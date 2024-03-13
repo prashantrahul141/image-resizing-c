@@ -1,18 +1,19 @@
 all: main
 
-test_1: main
-	./main 2 ./images/arch.jpg
+main: main_debug.o
+	gcc main_debug.o -o main -lm
 
-test_2: main
-	./main 2 ./images/2x2.png
+main_debug.o: main.c
+	gcc -c -DDEBUG -o main_debug.o -Wall -Wextra -pedantic main.c
 
-main: main.c
-	gcc -DDEBUG -o main -Wall -Wextra -pedantic main.c -lm
+build: main_release.o
+	gcc main_release.o -o main -lm
 
-build: main.c
-	gcc -O3 -o main -Wall -Wextra -pedantic main.c -lm
-
+main_release.o: main.c
+	gcc -c -O3 -o main_release.o -Wall -Wextra -pedantic main.c
 
 clean:
 	rm -f ./main
+	rm -f ./main_debug.o
+	rm -f ./main_release.o
 	rm -f output.jpg
